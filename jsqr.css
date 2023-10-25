@@ -1,0 +1,39 @@
+#page {
+	position: absolute;
+	top: 0;
+	height: 100vh;
+	z-index: 1;
+	@media screen and (width > 900px) {
+		width: 50vw;
+		left: 25vw;
+	}
+	@media screen and (width < 900px) {
+		width: 80vw;
+		left: 10vw;
+	}
+}
+
+#background {
+	width: 99vw;
+	height: 99vh;
+	position: absolute;
+	z-index: 10;
+}
+
+#canvas {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	z-index: -1;
+	margin: auto;
+	@media screen and (orientation: portrait) {
+		width: 100vw;
+	}
+	@media screen and (orientation: landscape) {
+		height: 100vh;
+	}
+}
+
+
