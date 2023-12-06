@@ -51,34 +51,51 @@ let iframe;
 let s;
 let v;
 let frameLength = "400px";
+let embed;
 function createFrame(url) {
-	let offsetLeft = document.getElementById("canvas").offsetLeft;
-	let offsetTop = document.getElementById("canvas").offsetHeight;
-	iframe = document.createElement("iframe");
-	iframe.src = url;
-	iframe.style.position = "absolute";
-	iframe.style.left = offsetLeft + "px";
-	iframe.style.top = "0px";
-	iframe.style.transformOrigin = "0 0";
-	iframe.style.height = frameLength;
-	iframe.style.width = frameLength;
+	if(overlayExists == true || url == undefined)
+		return;
+	let ENDPOINT = "http://localhost:8000/";
+	let THE_DATA = "Error. Nothing loaded!";
+	url = url.split("://")[1];
+	url = url.replaceAll("/", "SLASHINGTON");
+	startLoading();
+	fetch("http://localhost:8000/" + url)
+			.then(response => response.json())
+			.then((value) => {
+				THE_DATA = value.data;
 
-	document.body.appendChild(iframe);
+				let offsetLeft = document.getElementById("canvas").offsetLeft;
+				let offsetTop = document.getElementById("canvas").offsetHeight;
+				iframe = document.createElement("div");
+				iframe.innerHTML = THE_DATA;
+				iframe.style.position = "absolute";
+				iframe.style.left = offsetLeft + "px";
+				iframe.style.top = "0px";
+				iframe.style.transformOrigin = "0 0";
+				iframe.style.height = frameLength;
+				iframe.style.width = frameLength;
+				iframe.style.overflow = "hidden";
+				iframe.style.background = "white";
 
-	s = [
-	    0,0,1,
-	    iframe.offsetWidth,0,1,
-	    0,iframe.offsetHeight,1
-	];
+				stopLoading();
+				document.body.appendChild(iframe);
 
-	v = apply(adjugate(s),[iframe.offsetWidth,iframe.offsetHeight,1]);
+				s = [
+				    0,0,1,
+				    iframe.offsetWidth,0,1,
+				    0,iframe.offsetHeight,1
+				];
 
-	s = multiply(s,[
-	    v[0], 0, 0,
-	    0, v[1], 0,
-	    0, 0, v[2]
-	]);
-	return iframe;
+				v = apply(adjugate(s),[iframe.offsetWidth,iframe.offsetHeight,1]);
+
+				s = multiply(s,[
+				    v[0], 0, 0,
+				    0, v[1], 0,
+				    0, 0, v[2]
+				]);
+				overlay = iframe;
+	});
 }
 
 function transformFrame(code) {
@@ -99,6 +116,8 @@ function transformFrame(code) {
 	    0,0,v[2]
 	]);
 
+	if(s == null || s == undefined)
+		return;
 	var t = multiply(d,adjugate(s));
 
 	for (i = 0; i < 9; ++i) {

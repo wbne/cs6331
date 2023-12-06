@@ -1,14 +1,19 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>Testing cozmo's jsQR</title>
+		<title>cs6331 - ARQR Scanner</title>
 		<script src=".//jsQR.js"></script>
 		<link rel="stylesheet" href=".//jsqr.css">
 	</head>
 	<body>
 		<canvas style="" id="canvas"></canvas>
-		<iframe id="page"></iframe>
-		<div id="background"></div>
+		<div id="buttonHolder">
+			<p id="url"></p>
+			<br>
+			<a><button id="copy">Copy URL</button></a>
+			<a id="open"><button>Open in new tab</button></a>
+		</div>
+		<div id="loading" hidden="true"></div>
 	</body>
 	<footer>
 		<script src=".//jsqr.js"></script>

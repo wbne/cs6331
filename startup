@@ -1,0 +1,2 @@
+uvicorn api:app --reload
+phantomjs server.js 8080

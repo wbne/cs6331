@@ -1,0 +1,3 @@
+#!/bin/sh
+
+pdf2htmlEX output.pdf

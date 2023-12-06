@@ -5,8 +5,10 @@ var loadingMessage = document.getElementById("loadingMessage");
 var outputContainer = document.getElementById("output");
 var outputMessage = document.getElementById("outputMessage");
 var outputData = document.getElementById("outputData");
-const frame = document.getElementById("page");
-frame.hidden = true;
+let userURL = document.getElementById("url");
+let copyButton = document.getElementById("copy");
+let openButton = document.getElementById("open");
+let overlayExists = false;
 
 function drawLine(begin, end, color) {
 	canvas.beginPath();
@@ -51,10 +53,16 @@ function tick() {
 	  let yDiff = code.location.bottomRightCorner.y - code.location.topLeftCorner.y;
 	  if(newData !== data) {
 		console.log(code);
-		if(overlay != null)
-		  overlay.remove();
-		overlay = createFrame(newData, xDiff, yDiff);
+		if(overlay !== null && overlay !== undefined) {
+			overlay.remove();
+		}
+		//overlay = createFrame(newData, xDiff, yDiff);
+		createFrame(newData);
 		data = newData;
+		userURL.innerHTML = newData;
+		openButton.setAttribute("href", newData);
+		openButton.setAttribute("target", "_blank");
+		openButton.innerHTML = "<button> Open in new tab</button>";
 	  }
 
 	  transformFrame(code);
@@ -65,6 +73,8 @@ function tick() {
 			countdown = 0;	
 			overlay.remove();
 			data = null;
+			userURL.innerHTML = "";
+			openButton.innerHTML = "<button>Open in new tab</button>";
 		}
 	}
       }
@@ -85,23 +95,84 @@ document.body.onclick = function(anEvent) {
 		return;
 	if(coords.topLeftCorner.x < x && coords.topRightCorner.x > x) {
 		if(coords.topLeftCorner.y < y && coords.bottomLeftCorner.y > y) {
-			console.log("You clicked on the qr code");
 			clickedCode = true;
 		}
 	}
-	if(clickedCode)
+	if(clickedCode && overlayExists == false)
 		pullUpPage();
 	else
 		pullDownPage();
 	
 };
 
+let visiblePage; 
 function pullUpPage() {
-	frame.hidden = false;
-	frame.src = data;
+	if(visiblePage !== undefined && visiblePage !== null)
+		visiblePage.remove();
+	let iframe;
+	data = data.split("://")[1];
+	data = data.replaceAll("/", "SLASHINGTON");
+	startLoading();
+	overlayExists = true;
+	fetch("http://localhost:8000/" + data)
+			.then(response => response.json())
+			.then((value) => {
+				THE_DATA = value.data;
+
+				let offsetLeft = document.getElementById("canvas").offsetLeft;
+				let offsetTop = document.getElementById("canvas").offsetHeight;
+				iframe = document.createElement("div");
+				iframe.setAttribute("class", "slider close");
+				iframe.innerHTML = THE_DATA;
+				iframe.style.left = offsetLeft + "px";
+				iframe.style.transformOrigin = "0 0";
+				iframe.style.width = canvasElement.clientWidth + "px";
+
+				document.body.appendChild(iframe);
+
+				visiblePage = iframe;
+				
+				setTimeout(pullUpAnimation, 100);
+	});
+}
+
+function startLoading() {
+	const load = document.getElementById("loading");
+	load.removeAttribute("hidden");
+}
+
+function stopLoading() {
+	const load = document.getElementById("loading");
+	load.setAttribute("hidden", "true");
+}
+
+function pullUpAnimation() {
+	stopLoading();
+	visiblePage.setAttribute("class", "slider");
 }
 
 function pullDownPage() {
-	frame.hidden = true;
-	frame.src = "";
+	if(visiblePage !== undefined && visiblePage !== null) {
+		visiblePage.setAttribute("class", "slider close");
+		overlayExists = false;
+		setTimeout(deleteOverlay, 2000);
+	}
 }
+
+function deleteOverlay() {
+	document.body.removeChild(visiblePage);
+}
+
+copyButton.addEventListener("click", (event) => {
+	if(!navigator.clipboard) {
+		userURL.focus();
+		userURL.select();
+		let code = document.execCommand('copy');
+		let status = code ? 'not sad' : 'sad';
+		console.log(status, userURL);
+	}
+	else {
+		navigator.clipboard.writeText(userURL.innerHTML);
+	}
+});
+
